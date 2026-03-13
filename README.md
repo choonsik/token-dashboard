@@ -1,16 +1,55 @@
-# React + Vite
+# 📊 Token Usage Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, glassmorphism-styled web application built to monitor, calculate, and track your AI API token usage (Google Gemini & OpenAI) entirely locally within your browser.
 
-Currently, two official plugins are available:
+![Dashboard Preview](https://github.com/choonsik/token-dashboard/raw/main/public/favicon.svg) *(Note: Add a real screenshot here later!)*
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## ✨ Features
 
-## React Compiler
+- **🔒 100% Client-Side Security**: Your API keys never leave your browser. They are safely stored within your browser's local storage (`localStorage`). There is zero backend server involved.
+- **🎨 Premium Aesthetic Design**: Features a beautiful dark mode and translucent glassmorphism interface built with Vanilla CSS and modern keyframe animations.
+- **🧮 Live Token Calculator**: Paste any text prompt to calculate the exact token cost. Uses the official Google Gemini `countTokens` API for absolute accuracy.
+- **📈 Usage Tracking**: Since some APIs (like Gemini) don't expose endpoint quotas directly via the API Key, this app intelligently tracks and accumulates the tokens you calculate locally, giving you a simulated "Monthly Quota" progress bar.
+- **🚀 One-Click Deployment**: Fully configured to automatically deploy to GitHub Pages with zero hassle (`npm run deploy`).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Technology Stack
 
-## Expanding the ESLint configuration
+- **Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Styling**: Vanilla CSS (CSS Variables, Flexbox/Grid, Glassmorphism)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Hosting**: GitHub Pages (`gh-pages`)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Getting Started
+
+To run this project on your local machine:
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/choonsik/token-dashboard.git
+   cd token-dashboard
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+   Open your browser and navigate to `http://localhost:5173`.
+
+## 🌐 Live Demo
+
+You can view the live deployed version of this dashboard here:
+👉 **[Launch Token Dashboard](https://choonsik.github.io/token-dashboard/)**
+
+## 💡 How to Use
+
+1. Get your API Key from [Google AI Studio](https://aistudio.google.com/app/apikey) or [OpenAI Platform](https://platform.openai.com/api-keys).
+2. Paste the key into the **API Configuration** section and click Connect.
+3. Paste any text into the **Token Calculator** at the bottom to see how many tokens it consumes. The progress bar in the dashboard will automatically increment to track your usage locally!
+
+---
+*Built with React and Vite.*
