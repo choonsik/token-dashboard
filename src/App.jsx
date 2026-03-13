@@ -101,7 +101,7 @@ function App() {
             ))}
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', minHeight: '44px' }}>
             <input 
               type="password"
               className="glass-input"
@@ -110,22 +110,24 @@ function App() {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
             />
-            <button className="glass-button" onClick={handleSaveKey} disabled={testing}>
+            <button className="glass-button" onClick={handleSaveKey} disabled={testing} style={{ minWidth: '130px' }}>
               {testing ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
               {testing ? 'Linking...' : 'Connect'}
             </button>
           </div>
-
-          {status === 'success' && (
-            <p style={{ color: 'var(--success-color)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', fontSize: '0.9rem' }}>
-              <CheckCircle2 size={16} /> Successfully connected to {provider.toUpperCase()} API
-            </p>
-          )}
-          {status === 'error' && (
-            <p style={{ color: 'var(--danger-color)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', fontSize: '0.9rem' }}>
-              <AlertCircle size={16} /> Invalid API Key or connection failed.
-            </p>
-          )}
+          
+          <div style={{ minHeight: '30px' }}>
+            {status === 'success' && (
+              <p style={{ color: 'var(--success-color)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', fontSize: '0.9rem' }}>
+                <CheckCircle2 size={16} /> Successfully connected to {provider.toUpperCase()} API
+              </p>
+            )}
+            {status === 'error' && (
+              <p style={{ color: 'var(--danger-color)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '12px', fontSize: '0.9rem' }}>
+                <AlertCircle size={16} /> Invalid API Key or connection failed.
+              </p>
+            )}
+          </div>
         </section>
 
         {/* Dashboard Panel */}
