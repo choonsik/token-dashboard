@@ -9,17 +9,34 @@ function App() {
   const [testing, setTesting] = useState(false);
   const [status, setStatus] = useState(null); // 'success' | 'error' | null
   const [localUsage, setLocalUsage] = useState(0);
+  const [history, setHistory] = useState([]);
+  const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
+
+  const MODELS = {
+    gemini: [
+      { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', costPer1M: 0.15 },
+      { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', costPer1M: 3.5 },
+    ],
+    openai: [
+      { id: 'gpt-4o-mini', name: 'GPT-4o Mini', costPer1M: 0.15 },
+      { id: 'gpt-4o', name: 'GPT-4o', costPer1M: 5.0 },
+    ]
+  };
 
   // Load from local storage
   useEffect(() => {
     const stored = localStorage.getItem('token_dashboard_key');
     const storedUsage = localStorage.getItem('token_dashboard_usage');
+    const storedHistory = localStorage.getItem('token_dashboard_history');
     if (stored) {
       setApiKey(stored);
       setSavedKey(stored);
     }
     if (storedUsage) {
       setLocalUsage(parseInt(storedUsage, 10));
+    }
+    if (storedHistory) {
+      setHistory(JSON.parse(storedHistory));
     }
   }, []);
 
@@ -115,6 +132,30 @@ function App() {
               {testing ? 'Linking...' : 'Connect'}
             </button>
           </div>
+
+          <div style={{ marginTop: '1.5rem' }}>
+            <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px', display: 'block' }}>Active Model Selection</label>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {MODELS[provider].map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => setSelectedModel(m.id)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    fontSize: '0.85rem',
+                    background: selectedModel === m.id ? 'rgba(255,255,255,0.1)' : 'transparent',
+                    border: `1px solid ${selectedModel === m.id ? 'var(--accent-color)' : 'var(--glass-border)'}`,
+                    color: selectedModel === m.id ? 'white' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  {m.name}
+                </button>
+              ))}
+            </div>
+          </div>
           
           <div style={{ minHeight: '30px' }}>
             {status === 'success' && (
@@ -148,9 +189,17 @@ function App() {
           </div>
 
           <div style={{ background: 'rgba(0,0,0,0.2)', padding: '2rem', borderRadius: '16px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem', fontSize: '0.95rem' }}>
-              Monthly Token Usage (Local Tracked)
-            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+                Monthly Token Usage (Local Tracked)
+              </p>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Est. Cost</p>
+                <p style={{ color: 'var(--accent-color)', fontWeight: 700 }}>
+                  ${(MODELS[provider].find(m => m.id === selectedModel)?.costPer1M * localUsage / 1000000).toFixed(4)}
+                </p>
+              </div>
+            </div>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: '4px', marginBottom: '1.5rem' }}>
               <span style={{ fontSize: '3rem', fontWeight: 700, color: 'white' }}>{localUsage.toLocaleString()}</span>
               <span style={{ color: 'var(--text-secondary)' }}>/ {currentQuotaLimit.toLocaleString()}</span>
@@ -167,19 +216,68 @@ function App() {
               }} />
             </div>
             
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '12px' }}>
-              {provider === 'gemini' 
-                ? "Note: Gemini API doesn't expose a global quota endpoint via API keys yet. Tracking is local." 
-                : "Usage estimated locally for OpenAI."}
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '12px', display: 'flex', justifyContent: 'space-between' }}>
+              <span>{provider === 'gemini' ? "Local Tracking Active" : "OpenAI Estimation"}</span>
+              <button 
+                onClick={() => {
+                  if(confirm("Are you sure you want to reset all tracking data?")) {
+                    setLocalUsage(0);
+                    setHistory([]);
+                    localStorage.removeItem('token_dashboard_usage');
+                    localStorage.removeItem('token_dashboard_history');
+                  }
+                }}
+                style={{ background: 'none', border: 'none', color: 'var(--danger-color)', cursor: 'pointer', fontSize: '0.8rem', opacity: 0.7 }}
+              >
+                Reset Data
+              </button>
             </p>
           </div>
 
-          {/* Token Calculator Feature */}
-           <TokenCalculator apikey={savedKey} provider={provider} onUsageAdd={(val) => {
-             const newUsage = localUsage + val;
-             setLocalUsage(newUsage);
-             localStorage.setItem('token_dashboard_usage', newUsage);
-           }} />
+          <TokenCalculator 
+            apikey={savedKey} 
+            provider={provider} 
+            model={selectedModel}
+            onUsageAdd={(val, snippet) => {
+              const newUsage = localUsage + val;
+              setLocalUsage(newUsage);
+              const newHistory = [{
+                id: Date.now(),
+                date: new Date().toLocaleTimeString(),
+                tokens: val,
+                model: selectedModel,
+                snippet: snippet.substring(0, 50) + (snippet.length > 50 ? '...' : '')
+              }, ...history].slice(0, 10);
+              setHistory(newHistory);
+              localStorage.setItem('token_dashboard_usage', newUsage);
+              localStorage.setItem('token_dashboard_history', JSON.stringify(newHistory));
+            }} 
+          />
+
+          {history.length > 0 && (
+            <div style={{ marginTop: '2rem', borderTop: '1px solid var(--glass-border)', paddingTop: '2rem' }}>
+              <h3 style={{ fontSize: '1rem', color: 'white', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={16} color="var(--accent-color)" /> Recent Calculations
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {history.map(item => (
+                  <div key={item.id} style={{ 
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                    padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px',
+                    fontSize: '0.85rem'
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ color: 'white', marginBottom: '4px' }}>{item.snippet}</p>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{item.model} • {item.date}</p>
+                    </div>
+                    <div style={{ color: 'var(--accent-color)', fontWeight: 600 }}>
+                      +{item.tokens}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
         </section>
       </div>
@@ -205,7 +303,7 @@ function TokenCalculator({ apikey, provider, onUsageAdd }) {
 
     try {
       if (provider === 'gemini') {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:countTokens?key=${apikey}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:countTokens?key=${apikey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text }] }] })
@@ -213,13 +311,13 @@ function TokenCalculator({ apikey, provider, onUsageAdd }) {
         const data = await res.json();
         if (data.totalTokens) {
           setResult(data.totalTokens);
-          onUsageAdd(data.totalTokens);
+          onUsageAdd(data.totalTokens, text);
         } else throw new Error('Failed to calculate');
       } else {
-        // Mock for OpenAI since tiktoken requires heavy setup in frontend
+        // Mock for OpenAI
         const mockTokens = Math.ceil(text.length / 4);
         setResult(mockTokens);
-        onUsageAdd(mockTokens);
+        onUsageAdd(mockTokens, text);
       }
     } catch (err) {
       alert("Error calculating tokens. Please check your API key.");
