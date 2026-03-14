@@ -10,16 +10,27 @@ function App() {
   const [status, setStatus] = useState(null); // 'success' | 'error' | null
   const [localUsage, setLocalUsage] = useState(0);
   const [history, setHistory] = useState([]);
-  const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
+  const [selectedModel, setSelectedModel] = useState('gemini-2.0-flash');
 
   const MODELS = {
     gemini: [
-      { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', costPer1M: 0.15 },
-      { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', costPer1M: 3.5 },
+      { id: 'gemini-2.5-pro-exp-03-25', name: 'Gemini 2.5 Pro (Exp)', costPer1M: 0 },
+      { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', costPer1M: 0.1 },
+      { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash-Lite', costPer1M: 0.075 },
+      { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', costPer1M: 0.075 },
+      { id: 'gemini-1.5-flash-8b', name: 'Gemini 1.5 Flash-8B', costPer1M: 0.0375 },
+      { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', costPer1M: 1.25 },
     ],
     openai: [
+      { id: 'gpt-4.1', name: 'GPT-4.1', costPer1M: 2.0 },
+      { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', costPer1M: 0.4 },
+      { id: 'gpt-4.1-nano', name: 'GPT-4.1 Nano', costPer1M: 0.1 },
+      { id: 'gpt-4o', name: 'GPT-4o', costPer1M: 2.5 },
       { id: 'gpt-4o-mini', name: 'GPT-4o Mini', costPer1M: 0.15 },
-      { id: 'gpt-4o', name: 'GPT-4o', costPer1M: 5.0 },
+      { id: 'o4-mini', name: 'o4-mini', costPer1M: 1.1 },
+      { id: 'o3', name: 'o3', costPer1M: 10.0 },
+      { id: 'o3-mini', name: 'o3-mini', costPer1M: 1.1 },
+      { id: 'o1', name: 'o1', costPer1M: 15.0 },
     ]
   };
 
@@ -99,7 +110,11 @@ function App() {
             {['gemini', 'openai'].map(p => (
               <button 
                 key={p}
-                onClick={() => setProvider(p)}
+                onClick={() => {
+                  setProvider(p);
+                  // reset selected model to first of the new provider
+                  setSelectedModel(MODELS[p][0].id);
+                }}
                 style={{ 
                   flex: 1, 
                   padding: '12px', 
@@ -109,11 +124,11 @@ function App() {
                   color: provider === p ? 'white' : 'var(--text-secondary)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  textTransform: 'capitalize',
-                  fontWeight: provider === p ? 600 : 400
+                  fontWeight: provider === p ? 600 : 400,
+                  fontSize: '0.95rem'
                 }}
               >
-                {p} API
+                {p === 'gemini' ? '✦ Gemini API' : '⬡ OpenAI API'}
               </button>
             ))}
           </div>
@@ -134,24 +149,27 @@ function App() {
           </div>
 
           <div style={{ marginTop: '1.5rem' }}>
-            <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px', display: 'block' }}>Active Model Selection</label>
+            <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '8px', display: 'block' }}>Active Model</label>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {MODELS[provider].map(m => (
                 <button
                   key={m.id}
                   onClick={() => setSelectedModel(m.id)}
                   style={{
-                    padding: '8px 16px',
+                    padding: '6px 14px',
                     borderRadius: '20px',
-                    fontSize: '0.85rem',
-                    background: selectedModel === m.id ? 'rgba(255,255,255,0.1)' : 'transparent',
+                    fontSize: '0.8rem',
+                    background: selectedModel === m.id ? 'rgba(255,255,255,0.12)' : 'transparent',
                     border: `1px solid ${selectedModel === m.id ? 'var(--accent-color)' : 'var(--glass-border)'}`,
                     color: selectedModel === m.id ? 'white' : 'var(--text-secondary)',
                     cursor: 'pointer',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    whiteSpace: 'nowrap'
                   }}
                 >
                   {m.name}
+                  {m.costPer1M > 0 && <span style={{ marginLeft: '4px', opacity: 0.6, fontSize: '0.7rem' }}>${m.costPer1M}/1M</span>}
+                  {m.costPer1M === 0 && <span style={{ marginLeft: '4px', opacity: 0.6, fontSize: '0.7rem', color: 'var(--success-color)' }}>Free</span>}
                 </button>
               ))}
             </div>
