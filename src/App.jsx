@@ -291,7 +291,7 @@ function App() {
 }
 
 // Token Calculator Component
-function TokenCalculator({ apikey, provider, onUsageAdd }) {
+function TokenCalculator({ apikey, provider, model, onUsageAdd }) {
   const [text, setText] = useState('');
   const [calculating, setCalculating] = useState(false);
   const [result, setResult] = useState(null);
